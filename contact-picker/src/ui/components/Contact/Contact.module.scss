@@ -1,0 +1,140 @@
+@import '../../_helpers/variables';
+
+.contact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 48px;
+  padding: 6px 12px;
+  background-color: $white;
+
+  &:not(.contact_isLoading):not(.contact_isSelected) {
+    &:hover {
+      background-color: $trolleyGray_A400;
+    }
+
+    // &:focus-within {
+    //   background-color: $trolleyGray_A400;
+    // }
+  }
+
+  &:last-child {
+    border-radius: 0 0 $borderRadius_default $borderRadius_default;
+  }
+}
+
+.contact_isSelected:not(.contact_isIrrelevant) {
+  background-color: $darkOrange_A100;
+}
+
+.contact_isIrrelevant {
+  .contact__column_avatar,
+  .contact__column_leftColumn,
+  .contact__column_rightColumn {
+    opacity: 0.5;
+  }
+}
+
+// area button
+
+.contact__areaButton {
+  @include buttonReset();
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+
+  &:focus {
+    outline: none;
+    border-left: 4px solid $darkOrange_500;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+    border-left: 0;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-left: 4px solid $darkOrange_500;
+  }
+}
+
+// columns
+
+.contact__column {
+  height: 100%;
+}
+
+.contact__column + .contact__column {
+  margin-left: 8px;
+}
+
+.contact__column_checkbox,
+.contact__column_avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.contact__column_checkbox {
+  padding-right: 4px;
+}
+
+.contact__column_avatar {
+  pointer-events: none;
+}
+
+.contact__column_leftColumn,
+.contact__column_rightColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  > * + * {
+    margin-top: 4px;
+  }
+
+  > * {
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+
+.contact__column.contact__column_leftColumn {
+  align-items: flex-start;
+  min-width: 0;
+  flex-basis: 60%;
+  flex-grow: 1;
+  margin-right: 8px;
+}
+
+.contact__column.contact__column_rightColumn {
+  align-items: flex-end;
+  min-width: 0;
+  flex-basis: 40%;
+  margin-left: auto;
+  text-align: right;
+
+  &:not(:last-child) {
+    margin-right: 12px;
+  }
+}
+
+.contact__optionsButton {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: $trolleyGray_300;
+}

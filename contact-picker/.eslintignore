@@ -1,0 +1,6 @@
+.github/
+build/js/
+lib/
+webpack.dev.config.js
+*.ejs
+**/node_modules/**

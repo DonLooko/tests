@@ -1,0 +1,50 @@
+// button, input, optgroup, select, textarea
+@mixin formReset {
+  color: inherit;
+  font: inherit;
+}
+
+// button
+@mixin buttonReset {
+  appearance: none;
+  padding: 0;
+  border-width: 0;
+  background-color: transparent;
+}
+
+// ul, ol
+@mixin listReset {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// input
+@mixin inputReset {
+  line-height: inherit;
+}
+
+// ie11 only
+@mixin ie11 {
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    @content;
+  }
+}
+
+// focus
+@mixin shadowFocus() {
+  &:focus {
+    outline: none;
+    box-shadow: $boxShadow_focus;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: $boxShadow_focus;
+  }
+}

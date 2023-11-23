@@ -1,0 +1,9 @@
+.idea
+TRASH
+node_modules
+lib
+build/index.html
+build/js
+.DS_Store
+dist
+storybook-static

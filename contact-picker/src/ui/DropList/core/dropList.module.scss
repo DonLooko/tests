@@ -1,0 +1,182 @@
+.dropList {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  width: 196px;
+  border: 1px solid $trolleyGray_100;
+  border-radius: $borderRadius_default;
+  box-shadow: 0 2px 8px 0 rgba(23, 23, 23, 0.2);
+  background-color: $white_500;
+  font-size: $fontSize_defaultText;
+  color: $trolleyGray_800;
+}
+
+.dropList_hasHeight {
+  overflow-y: auto;
+}
+
+.dropList__section {
+  padding: 8px 16px;
+
+  .dropList__item {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: 16px;
+  }
+}
+
+.dropList__section + .dropList__section {
+  border-top: 1px solid $trolleyGray_100;
+}
+
+.dropList__section_isHeader {
+  padding: 16px;
+}
+
+.dropList__section_isFooter {
+  padding: 12px 16px;
+}
+
+.dropList__section_isScrollable {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dropList__item {
+  @include formReset();
+  @include buttonReset();
+
+  position: relative;
+  display: flex;
+  padding: 8px 16px;
+  min-height: 32px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: $fontSize_smallText;
+  line-height: $lineHeight_smallText;
+  color: $trolleyGray_800;
+
+  &:not(.dropList__item_isDisabled):hover,
+  &:not(:disabled):hover,
+  &:focus-within {
+    outline: none;
+    box-shadow: none;
+    background-color: $trolleyGray_A400;
+    color: $trolleyGray_800;
+    text-decoration: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+
+    .dropList__text {
+      color: $trolleyGray_300;
+    }
+  }
+
+  svg + .dropList__text {
+    margin-left: 10px;
+  }
+
+  .dropList__text + svg {
+    margin-left: 10px;
+  }
+}
+
+.dropList__title {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  text-transform: uppercase;
+  font-size: $fontSize_smallText;
+  font-weight: $fontWeight_semiBold;
+  color: $trolleyGray_500;
+}
+
+.dropList__input {
+  @include formReset();
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 1;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+
+    + .dropList__text {
+      color: $trolleyGray_300;
+    }
+  }
+
+  & + .dropList__text {
+    padding-right: 16px;
+  }
+
+  &:checked + .dropList__text {
+    font-weight: $fontWeight_semiBold;
+  }
+}
+
+.dropList__input[type='radio']:checked + .dropList__text,
+.dropList__input[type='radio']:disabled:checked + .dropList__text {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23ff9900'%3E%3Cpath fill-rule='nonzero' d='M5.9257 11.5877l8.331-9.2567c.3695-.4105 1.0018-.4438 1.4123-.0743.4105.3695.4438 1.0018.0743 1.4123l-9 10a.9969.9969 0 0 1-.6907.3296.9969.9969 0 0 1-.7216-.2553l-5-4.5C-.0795 8.8738-.1128 8.2415.2567 7.831c.3695-.4105 1.0018-.4438 1.4123-.0743l4.2567 3.831z'/%3E%3C/svg%3E");
+  background-size: 16px;
+  background-position: right center;
+  background-repeat: no-repeat;
+}
+
+.dropList__input[type='checkbox'] + .dropList__text::after,
+.dropList__input[type='checkbox']:disabled + .dropList__text::after {
+  position: absolute;
+  content: '';
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background-color: $white_500;
+  border: 1px solid $trolleyGray_300;
+  border-radius: $borderRadius_default;
+  pointer-events: none;
+}
+
+.dropList__input[type='checkbox']:checked + .dropList__text::after,
+.dropList__input[type='checkbox']:disabled:checked + .dropList__text::after {
+  border-color: $darkOrange_500;
+  background-color: $darkOrange_500;
+  background-image: url("data:image/svg+xml,%3Csvg fill='none' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8'%3E%3Cpath d='M9.64.232A1 1 0 008.232.36l-4.3 5.159-2.225-2.226A1 1 0 10.293 4.707l2.991 2.991a.996.996 0 00.325.223 1.003 1.003 0 001.167-.29l4.992-5.99A1 1 0 009.64.23z' fill='%23fff'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 10px 8px;
+}
+
+.dropList__input[type='checkbox']:disabled:checked + .dropList__text::after {
+  background-color: $trolleyGray_400;
+  border-color: $trolleyGray_400;
+  opacity: 0.5;
+}
+
+.dropList__text {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  font-size: $fontSize_smallText;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+
+  svg {
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+}
+

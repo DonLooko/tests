@@ -1,0 +1,18 @@
+@import '../_helpers/variables';
+@import '../_helpers/mixins';
+
+.tabs__tabPanel {
+  display: none;
+}
+
+.tabs__tabPanel_isSelected {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  max-height: 100%;
+  position: relative;
+}
+
+.tabs__tabPanel_isScrollable {
+  overflow-y: auto;
+}

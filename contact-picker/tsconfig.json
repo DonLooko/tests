@@ -1,0 +1,16 @@
+{
+  "extends": "@pdffiller/dev-tools/ts-config/tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "types": ["@pdffiller/dev-tools", "react", "jest", "@tippyjs/react"]
+  },
+  "include": ["./**/*.ts", "./**/*.js", "./**/*.tsx", "./**/*.jsx"],
+  "exclude": ["node_modules", "dist", "public", "src/ui"],
+  "plugins": [
+    {
+      "name": "typescript-plugin-css-modules"
+    }
+  ]
+}

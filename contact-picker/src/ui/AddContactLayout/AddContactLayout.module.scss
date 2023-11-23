@@ -1,0 +1,61 @@
+@import '../_helpers/variables';
+@import '../_helpers/mixins';
+
+.addContactLayout {
+  display: flex;
+  flex-direction: column;
+  padding-top: 1px;
+  overflow: hidden;
+  min-height: calc(100vh - 56px);
+}
+
+.addContactLayout__header {
+  position: relative;
+  min-height: 0;
+  flex-shrink: 0;
+  padding: 8px 24px 0;
+  background-color: $white;
+  box-shadow: 0px 1px 0px $trolleyGray_100;
+}
+
+.addContactLayout__content {
+  height: 100%;
+  min-height: 0;
+  flex-shrink: 1;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.addContactLayout__content_isGray {
+  background-color: $slateBlue_A100;
+}
+
+.addContactLayout__footer {
+  position: relative;
+  min-height: 0;
+  flex-basis: 72px;
+  min-height: 72px;
+  padding: 20px 32px;
+  box-shadow: inset 0px 1px 0px $trolleyGray_100;
+  background: $white;
+}
+
+.addContactLayout__group {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.addContactLayout__groupTitle {
+  background-color: #F1F2F4;
+  font-size: $fontSize_smallText;
+  font-weight: $fontWeight_bold;
+  line-height: $lineHeight_heading2;
+  color: $trolleyGray_500;
+  text-transform: uppercase;
+  padding: 12px 24px;
+}
+
+.addContactLayout__groupContent {
+  padding: 16px 24px 24px;
+}

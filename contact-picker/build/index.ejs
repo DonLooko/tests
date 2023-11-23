@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+    <head>
+        <% const static_css = 'static-ak.pdffiller.com'; %>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no">
+        <meta name="format-detection" content="telephone=no">
+
+        <title>Address book App</title>
+        <link rel="apple-touch-icon" href="//static.pdffiller.com/img/apple-touch-icon.png">
+        <link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64" href="//static.pdffiller.com/img/favicon.ico"/>
+
+        <script src="https://static.pdffiller.com/js/vendors/modernizer.js"></script>
+        <link rel="stylesheet" href="https://<%= static_css %>/css/style.css">
+        <link rel="stylesheet" href="https://<%= static_css %>/components/new-address-book/build.css">
+        <link rel="stylesheet" href="http://<%= static_css %>/components/combine-modal/cm/build.css">
+<!--        <script src="https://static-ak.pdffiller.com/frontend/javascript-vendors.v3.0.0-react18.0.min.js"></script>-->
+        <script type="text/javascript" src="/local-env.js"></script>
+
+        <style>
+          body {
+            background: #fff;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+          }
+
+          .app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .container {
+            margin-top: 20px;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+          }
+        </style>
+    </head>
+
+<body style="display: flex; flex-direction: column; align-items: center">
+
+<div class="app">
+    <h1>Contact Picker</h1>
+
+    <div class="container">
+        <div id="contact-picker"></div>
+    </div>
+</div>
+
+<div id="contact-picker-sidebar"></div>
+
+<div id="rootModal"></div>
+
+<script>
+  window.pdffiller = 'en';
+  window.user = {
+    userId: localEnv.LOCAL_USER_ID,
+    token: localEnv.LOCAL_USER_TOKEN
+  };
+  window.EXPERIMENTS = localEnv.LOCAL_EXPERIMENTS;
+  window.frontendConfigUrls = {
+    "system": {
+      "baseUrl": `https://${localEnv.LOCAL_BACKEND}.pdffillers.com`,
+    },
+    "api": {
+      "baseUrl": `https://${localEnv.LOCAL_BACKEND}.pdffillers.com/api_v3`,
+      "appKey": localEnv.LOCAL_APP_KEY,
+      federatedSearchUrl: 'https://federated-search.pdffillers.com/api/search/v1',
+    },
+  };
+</script>
+</body>
+</html>

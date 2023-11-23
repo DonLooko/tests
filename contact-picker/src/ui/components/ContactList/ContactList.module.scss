@@ -1,0 +1,101 @@
+@import '../../_helpers/variables';
+
+.contactList {
+  position: relative;
+  width: 100%;
+  min-width: 376px;
+  max-width: 400px;
+  overflow: hidden;
+  border: 1px solid $trolleyGray_100;
+  border-radius: $borderRadius_default;
+  box-shadow: 0 2px 8px rgba(23, 23, 23, 0.2);
+  background-color: $white;
+}
+
+.contactList_isAddressBook {
+  display: flex;
+  flex-direction: column;
+  height: 340px;
+
+  .contactList__header,
+  .contactList__footer {
+    flex-shrink: 0;
+  }
+
+  .contactList__content {
+    flex-grow: 1;
+  }
+}
+
+.contactList__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  box-shadow: inset 0 -1px 0 $trolleyGray_50;
+
+  > * + * {
+    margin-left: 8px;
+  }
+
+  > button {
+    flex-shrink: 0;
+  }
+}
+
+.contactList__content {
+  position: relative;
+  padding-top: 8px;
+  overflow-y: auto;
+}
+
+.contactList__content_isEmptySearch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 0;
+  color: $trolleyGray_500;
+
+  > * + * {
+    margin-top: 8px;
+  }
+}
+
+.contactList__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  box-shadow: inset 0 1px 0 0 $trolleyGray_100;
+
+  > * {
+    flex-grow: 1;
+  }
+
+  > * + * {
+    margin-left: 12px;
+  }
+}
+
+.contactList__emptyList {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.contactList__emptySearch {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: $trolleyGray_500;
+
+  > * + * {
+    margin-top: 8px;
+  }
+}
