@@ -1,4 +1,4 @@
-name: [ShareFlowApp] [DEV] deploy
+name: '[ShareFlowApp] [DEV] deploy'
 
 on:
   workflow_dispatch:

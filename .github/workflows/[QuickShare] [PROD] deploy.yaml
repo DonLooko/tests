@@ -1,4 +1,4 @@
-name: [QuickShare] [PROD] deploy
+name: '[QuickShare] [PROD] deploy'
 
 on:
   workflow_dispatch:
