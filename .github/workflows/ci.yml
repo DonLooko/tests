@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+    types: ['opened', 'edited', 'reopened', 'synchronize']
+
+jobs:
+  build:
+    name: CI
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys:
+            ${{ runner.os }}-modules-
+
+      - name: npm config set registry
+        run: npm config set registry https://artifactory.infrateam.xyz/api/npm/npm/
+
+      - name: set npm authToken
+        run: echo "//artifactory.infrateam.xyz/api/npm/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      - name: set always-auth
+        run: echo "always-auth = true" >> ~/.npmrc
+
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.PDFFRONT_APP_ID }}
+          private_key: ${{ secrets.PDFFRONT_APP_PRIVATE_KEY }}
+
+      - name: Checkout Actions team actions
+        uses: actions/checkout@v3
+        with:
+          ref: github-actions
+          repository: pdffiller/export-shared
+          path: .github/export-shared
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Lint pull request title
+        uses: ./.github/export-shared/lint-pull-request-title
+        with:
+          pr-title: ${{ github.event.pull_request.title }}
+
+      - name: npm install
+        run: npm install
+
+      - name: Check types
+        run: npm run check-types
+
+      - name: npm run lint
+        run: npm run lint
+
+      - name: npm run compile
+        run: npm run compile
+
+      - name: Run Unit Tests
+        run: npm run test

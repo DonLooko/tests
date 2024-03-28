@@ -1,0 +1,119 @@
+name: Deploy To Dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      webpack-build-mode:
+        type: choice
+        default: development
+        required: true
+        description: 'Webpack build mode'
+        options:
+          - development
+          - production
+      target-dev:
+        type: string
+        required: true
+        default: act
+        description: Write your dev
+      build-info:
+        type: string
+        required: false
+        description: Write build information
+      is-active:
+        description: 'Set As Active'
+        required: false
+        type: boolean
+        default: true
+permissions:
+  id-token: write
+  contents: read
+env:
+  CI_ENV: 'GITHUB'
+  DEPLOY_BUNDLE: 'ShareFlowApp'
+  NODE_ENV: ${{ github.event.inputs.webpack-build-mode }}
+  BUILD_NUMBER: ${{ github.run_number }}${{ github.run_attempt }}00
+  BUILD_BRANCH: ${{ github.ref_name }}
+  TARGET_DEV: ${{ github.event.inputs.target-dev }}
+  S3_CDN_BUCKET: ${{ secrets.FRONT_DEV_S3_CDN_BUCKET }}
+  AWS_REGION: 'us-east-1'
+  AWS_ROLE_TO_ASSUME: 'arn:aws:iam::803913471631:role/dpf-static-github-role'
+  AWS_ROLE_TO_ASSUME_NAME: 'dpf-static-github-role'
+  VERSION_REGISTRATOR: '${{ github.event.inputs.target-dev }}.pdffillers.com'
+  SOURCE_MAP: 'TRUE'
+  BACKEND: 'production'
+jobs:
+  deploy-to-dev:
+    environment:
+      name: dev
+      url: https://${{ env.TARGET_DEV }}.pdffillers.com/en/forms
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.export.outputs.github_sha }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys:
+            ${{ runner.os }}-modules-
+
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.PDFFRONT_APP_ID }}
+          private_key: ${{ secrets.PDFFRONT_APP_PRIVATE_KEY }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: pdffiller/frontend-actions
+          path: .github/frontend-actions
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Setup NPM Registry
+        uses: ./.github/frontend-actions/setup-npm-registry
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install Dependencies
+        run: npm run install:shareFlow --production=false
+
+      - name: build
+        run: npm run build:shareFlow
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: ${{ env.AWS_ROLE_TO_ASSUME_NAME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Copy to S3 bucket
+        uses: ./.github/frontend-actions/copy-to-dev-cdn
+        with:
+          deploy-dir: './apps/share-app/public'
+
+      - name: Switch version
+        uses: ./.github/frontend-actions/switch-version
+        with:
+          app-key: ${{ secrets.FRONT_DEV_APP_KEY }}
+          sign: ${{ secrets.FRONT_DEV_API_V3_SIGN }}
+          version-registrator: ${{ env.VERSION_REGISTRATOR }}
+          build-info: '${{ env.BUILD_BRANCH }} build: ${{ env.BUILD_NUMBER }} description: ${{ github.event.inputs.build-info }}'
+          is-active: ${{ github.event.inputs.is-active }}
+
+      - name: "Branch: ${{ env.BUILD_BRANCH }}, build: ${{ env.BUILD_NUMBER }}, dev: ${{ env.TARGET_DEV }}"
+        run: |
+          echo "Branch: ${{ env.BUILD_BRANCH }}, build: ${{ env.BUILD_NUMBER }}, |
+          dev: ${{ env.TARGET_DEV }}, mode: ${{ env.NODE_ENV }}"    

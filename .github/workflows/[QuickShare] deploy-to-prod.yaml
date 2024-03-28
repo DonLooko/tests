@@ -1,0 +1,153 @@
+name: Deploy To Prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      webpack-build-mode:
+        type: choice
+        default: production
+        required: true
+        description: 'Webpack build mode'
+        options:
+          - development
+          - production
+      build-info:
+        type: string
+        required: false
+        description: Write build information
+      is-active:
+        description: 'Set As Active'
+        required: false
+        type: boolean
+        default: false
+      rc-build-number:
+        description: 'RC build number for copy'
+        required: false
+        type: string
+        default: ''
+      interface-version:
+        description: 'Interface package major version'
+        required: false
+        type: string
+        default: '2'
+permissions:
+  id-token: write
+  contents: read
+env:
+  BACKEND: 'production'
+  CI_ENV: 'GITHUB'
+  DEPLOY_BUNDLE: 'QuickShare'
+  BUILD_BRANCH: ${{ github.ref_name }}
+  NODE_ENV: ${{ github.event.inputs.webpack-build-mode }}
+  BUILD_NUMBER: ${{ github.run_number }}${{ github.run_attempt }}00
+  S3_CDN_BUCKET: ${{ secrets.FRONT_PROD_S3_CDN_BUCKET }}
+  S3_CDN_SOURCE_MAP_BUCKET: ${{ secrets.FRONT_PROD_S3_CDN_SOURCE_MAP_BUCKET }}
+  S3_RC_CDN_BUCKET: ${{ secrets.FRONT_RC_S3_CDN_BUCKET }}
+  S3_RC_CDN_SOURCE_MAP_BUCKET: ${{ secrets.FRONT_RC_S3_CDN_SOURCE_MAP_BUCKET }}
+  SOURCEMAP_CDN: ${{ secrets.FRONT_PROD_CDN_SOURCE_MAP }}
+  AWS_REGION: 'us-east-1'
+  AWS_ROLE_TO_ASSUME: 'arn:aws:iam::811130481316:role/ppf-static-github-role'
+  AWS_ROLE_TO_ASSUME_NAME: 'dpf-static-github-role'
+  VERSION_REGISTRATOR: 'www.pdffiller.com'
+  SOURCE_MAP: 'TRUE'
+  RC_AWS_ROLE_TO_ASSUME: 'arn:aws:iam::778155162100:role/pdf-rc-static-github-role'
+jobs:
+  deploy-to-prod:
+    environment:
+      name: prod
+      url: https://www.pdffiller.com/en/forms
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.export.outputs.github_sha }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.PDFFRONT_APP_ID }}
+          private_key: ${{ secrets.PDFFRONT_APP_PRIVATE_KEY }}
+
+      - name: Configure AWS Credentials
+        if: ${{ github.event.inputs.rc-build-number != '' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.RC_AWS_ROLE_TO_ASSUME }}
+          role-session-name: ${{ env.AWS_ROLE_TO_ASSUME_NAME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: pdffiller/frontend-actions
+          path: .github/frontend-actions
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Append interface package version to DEPLOY_BUNDLE (for copy from RC)
+        if: ${{ github.event.inputs.rc-build-number != '' }}
+        run: |
+          echo "DEPLOY_BUNDLE=${{ env.DEPLOY_BUNDLE }}_${{ inputs.interface-version }}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Copy artifacts from RC
+        if: ${{ github.event.inputs.rc-build-number != '' }}
+        uses: ./.github/frontend-actions/copy_artifacts_from_rc
+        with:
+          rc-build-number: ${{ github.event.inputs.rc-build-number }}
+
+      - name: Copy build branch file from RC
+        if: ${{ github.event.inputs.rc-build-number != '' }}
+        uses: ./.github/frontend-actions/copy_build_branch_from_rc
+        with:
+          rc-build-number: ${{ github.event.inputs.rc-build-number }}
+
+      - name: Setup NPM Registry
+        uses: ./.github/frontend-actions/setup-npm-registry
+        if: ${{ github.event.inputs.rc-build-number == '' }}
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install Dependencies
+        if: ${{ github.event.inputs.rc-build-number == '' }}
+        run: npm i --production=false
+
+      - name: build
+        if: ${{ github.event.inputs.rc-build-number == '' }}
+        run: npm run build
+
+      - name: Append interface package version to DEPLOY_BUNDLE (for build)
+        if: ${{ github.event.inputs.rc-build-number == '' }}
+        uses: ./.github/frontend-actions/append-version-to-bundle-name
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: ${{ env.AWS_ROLE_TO_ASSUME_NAME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Copy to S3 bucket
+        uses: ./.github/frontend-actions/copy-to-prod-cdn
+
+      - name: Copy Source map to S3 bucket
+        uses: ./.github/frontend-actions/copy-source-map-to-cdn
+
+      - name: Switch version
+        uses: ./.github/frontend-actions/switch-version
+        with:
+          app-key: ${{ secrets.FRONT_PROD_APP_KEY }}
+          sign: ${{ secrets.FRONT_PROD_API_V3_SIGN }}
+          version-registrator: ${{ env.VERSION_REGISTRATOR }}
+          build-info: '${{ env.BUILD_BRANCH_RC || env.BUILD_BRANCH }} build: ${{ env.BUILD_NUMBER }} rcBuild: ${{ github.event.inputs.rc-build-number }} description: ${{ github.event.inputs.build-info }}'
+          is-active: ${{ github.event.inputs.is-active }}
+
+      - name: "Branch: ${{ env.BUILD_BRANCH }}, build: ${{ env.BUILD_NUMBER }}, rcBuild: ${{ github.event.inputs.rc-build-number }}"
+        run: |
+          echo "Branch: ${{ env.BUILD_BRANCH }}, build: ${{ env.BUILD_NUMBER }}, rcBuild: ${{ github.event.inputs.rc-build-number }} |
+          mode: ${{ env.NODE_ENV }}"       

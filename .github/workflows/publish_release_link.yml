@@ -1,0 +1,58 @@
+name: Attach release link to Jira tasks
+
+on:
+  release:
+    types: [created, edited]
+
+jobs:
+  build:
+    name: Publishing...
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.PDFFRONT_APP_ID }}
+          private_key: ${{ secrets.PDFFRONT_APP_PRIVATE_KEY }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: pdffiller/frontend-actions
+          path: .github/frontend-actions
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Checkout Actions team actions
+        uses: actions/checkout@v3
+        with:
+          ref: github-actions
+          repository: pdffiller/export-shared
+          path: .github/export-shared
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Setup NPM Registry
+        uses: ./.github/frontend-actions/setup-npm-registry
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Adding release link to tasks
+        with:
+          release-body: ${{ github.event.release.body }}
+          link-to-release: ${{ github.event.release.html_url }}
+          release-title: 'Quick share release v[tag]'
+          jira-username: ${{ secrets.JIRA_API_USER }}
+          jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
+        uses: ./.github/export-shared/attach-release-link
+
+
